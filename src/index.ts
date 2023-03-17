@@ -1,13 +1,17 @@
 import express from 'express';
-import { createServer } from 'http';
+import cors from 'cors';
+import router from './router';
+import { socketListeners } from './utils/listeners/socketListeners';
+import { Server } from 'socket.io';
+import * as http from 'http';
 
 const PORT = process.env.PORT || 8080;
-const HOST = 'localhost';
+const HOST = process.env.HOST || 'localhost';
 
-const app = express();
-const httpServer = createServer(app);
-
-httpServer.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server running on port: http://${HOST}:${PORT}`);
-});
+new Server(
+  http.createServer(express().use(cors()).use(router)).listen(PORT, () => {
+    // eslint-disable-next-line no-console
+    console.log(`Server running on port: http://${HOST}:${PORT}`);
+  }),
+  { cors: { origin: 'http://localhost:3000' } },
+).on('connection', socketListeners);
