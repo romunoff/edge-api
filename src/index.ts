@@ -4,6 +4,7 @@ import router from './router';
 import { socketListeners } from './utils/listeners/socketListeners';
 import { Server } from 'socket.io';
 import * as http from 'http';
+import { SocketEvents } from './data/enums/Socket/SocketEvents';
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || 'localhost';
@@ -14,4 +15,4 @@ new Server(
     console.log(`Server running on port: http://${HOST}:${PORT}`);
   }),
   { cors: { origin: 'http://localhost:3000' } },
-).on('connection', socketListeners);
+).on(SocketEvents.CONNECTION, socketListeners);
