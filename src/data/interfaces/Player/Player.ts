@@ -5,4 +5,5 @@ export interface Player {
     y: number;
     z: number;
   };
+  color: string;
 }

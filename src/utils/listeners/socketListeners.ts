@@ -1,22 +1,39 @@
 import { Socket } from 'socket.io';
 import { Player } from '../../data/interfaces/Player/Player';
 import { SocketEvents } from '../../data/enums/Socket/SocketEvents';
+import { createRandomHexColor } from '../helpers/colors-helper';
 
 const ROOM_NAME = 'room';
+const MAX_ROOM_SIZE = 2;
 
 const players = new Set<Player>();
+const finish = {
+  position: { x: 0, y: 0.01, z: 0 },
+  color: 'red',
+};
 
 export const socketListeners = (socket: Socket) => {
   socket.join(ROOM_NAME);
 
-  players.add({
-    id: socket.id,
-    position: {
-      x: Math.floor(Math.random() * 5),
-      y: 0.5,
-      z: Math.floor(Math.random() * 5),
-    },
-  });
+  if (players.size < MAX_ROOM_SIZE) {
+    const position: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
+
+    if (!players.size) {
+      position.y = 0.5;
+      position.z = -3;
+    } else {
+      position.y = 0.5;
+      position.z = 3;
+    }
+
+    players.add({
+      id: socket.id,
+      position,
+      color: createRandomHexColor(),
+    });
+  }
+
+  socket.emit('getFinish', finish);
 
   socket.emit(
     SocketEvents.GET_PLAYER,
@@ -39,6 +56,11 @@ export const socketListeners = (socket: Socket) => {
       }
     });
     socket.to(ROOM_NAME).emit('getPlayers', Array.from(players));
+
+    if (Math.round(data.x) === finish.position.x && Math.round(data.z) === finish.position.z) {
+      socket.emit('getWinner', socket.id);
+      socket.to(ROOM_NAME).emit('getWinner', socket.id);
+    }
   });
 
   socket.on(SocketEvents.DISCONNECT, () => {
