@@ -9,7 +9,7 @@ const MAX_ROOM_SIZE = 2;
 const players = new Set<Player>();
 const finish = {
   position: { x: 0, y: 0.01, z: 0 },
-  color: 'red',
+  color: '#DA012D',
 };
 
 export const socketListeners = (socket: Socket) => {
@@ -19,17 +19,20 @@ export const socketListeners = (socket: Socket) => {
     const position: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
 
     if (!players.size) {
+      position.x = 3;
       position.y = 0.5;
-      position.z = -3;
+      position.z = -10;
     } else {
+      position.x = -5;
       position.y = 0.5;
-      position.z = 3;
+      position.z = 10;
     }
 
     players.add({
       id: socket.id,
       position,
       color: createRandomHexColor(),
+      name: `Player ${players.size + 1}`,
     });
   }
 
@@ -58,8 +61,9 @@ export const socketListeners = (socket: Socket) => {
     socket.to(ROOM_NAME).emit('getPlayers', Array.from(players));
 
     if (Math.round(data.x) === finish.position.x && Math.round(data.z) === finish.position.z) {
-      socket.emit('getWinner', socket.id);
-      socket.to(ROOM_NAME).emit('getWinner', socket.id);
+      const playerName = Array.from(players).find((player: Player) => player.id === socket.id)?.name;
+      socket.emit('getWinner', playerName);
+      socket.to(ROOM_NAME).emit('getWinner', playerName);
     }
   });
 

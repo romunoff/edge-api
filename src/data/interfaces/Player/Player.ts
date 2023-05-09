@@ -6,4 +6,5 @@ export interface Player {
     z: number;
   };
   color: string;
+  name: string;
 }
